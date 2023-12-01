@@ -23,7 +23,7 @@
           <div class="col-lg-3 col-md-6 mb-2">
             <div class="form-group mt-3">
               <label class="form-label" for="gemeente">Gemeentes</label>
-              <select class="form-control" id="gemeente" name="city" multiple v-model="filters.city">
+              <select class="form-control" id="gemeente" name="city" multiple v-model="filters.city" @change="filterHouses">
                 <option v-for="city in filterData.cities" :value="city.city">{{ city.city }} ({{ city.number_of_homes }})</option>
               </select>
             </div>
@@ -31,8 +31,9 @@
           <div class="col-lg-3 col-md-6 mb-2">
             <div class="form-group mt-3">
               <label class="form-label" for="type">Type</label>
-              <select class="form-control" id="type" name="type">
+              <select v-model="filters.hometypeid" @change="filterHouses" class="form-control" id="type" name="type">
                 <option :value="undefined">Maak een keuze...</option>
+                <option v-for="hometypeid in filterData.homeTypes" :value="hometypeid.id">{{ hometypeid.hometypeid }} {{ hometypeid.description }}</option>
               </select>
             </div>
           </div>
@@ -158,15 +159,26 @@ export default {
     };
 
     const filterHouses = function () {
-      console.log(filters.value);
+      const baseURL = `https://realestate-api.fgmnts.be/api/v1/homes`;
+      const filterString = Object.entries(filters.value)
+        .filter(function ([key, value]) {
+          return (value !== undefined && value !== '') || (value && value.length > 0);
+        })
+        .map(function ([key, value]) {
+          return `${key}=${value}`;
+        })
+        .join('&');
+
+      console.log(`${baseURL}?${filterString}`);
+      // console.log(filters.value);
     };
 
     const getHouses = async function () {
       const data = await fetch(`https://realestate-api.fgmnts.be/api/v1/homes`).then((r) => r.json());
       houses.value = data.data;
       loading.value = false;
-      // console.log(data);
     };
+
     const ifGarage = function (garage) {
       if (garage === true) {
         return 'Ja';
